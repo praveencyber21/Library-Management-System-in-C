@@ -3,6 +3,7 @@
 #include <termios.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define TAB 9
 #define BKSP 8
@@ -18,7 +19,7 @@ void addBook();
 void modifyBook();
 void listBook();
 void rentBook();
-void searchBook();
+int searchBook(int);
 void deleteBook();
 
 // User functions
@@ -163,15 +164,17 @@ void menu()
         printf("Please choice current option\n");
         break;
     }
+
+    fflush(stdin);
 }
 
 // Book management function
 void bookManagement()
 {
     system("clear");
-    printf("----------------------------------\n");
+    printf("---------------------------------------------------\n");
     printf(">>> Library Management System - Book panel <<<\n");
-    printf("----------------------------------\n\n");
+    printf("---------------------------------------------------\n\n");
     printf("[*] 1. Add book\n");
     printf("[*] 2. Modify book\n");
     printf("[*] 3. List book\n");
@@ -183,6 +186,7 @@ void bookManagement()
 
     printf("[*] Enter your choice & hit ENTER\n");
     printf("    Choice: ");
+    fflush(stdin);
 
     int choice;
     scanf("%d", &choice);
@@ -201,7 +205,7 @@ void bookManagement()
         rentBook();
         break;
     case 5:
-        searchBook();
+        searchBook(3);
         break;
     case 6:
         deleteBook();
@@ -272,11 +276,76 @@ void userManagement()
 // Add book
 void addBook()
 {
+    char book_name[100], book_author[25], book_publisher[25];
+    int book_id, book_quantity;
+
+    FILE *fp = fopen("Book_details.txt", "ab+");
+    if (fp != NULL)
+    {
+        system("clear");
+        printf("----------------------------\n");
+        printf(">>> Add Boook <<<\n");
+        printf("----------------------------\n\n");
+
+    addbook:
+        printf("[*] Enter Book name: ");
+        scanf(" %[^\n]", book_name);
+
+        printf("[*] Enter Book author: ");
+        scanf(" %[^\n]", book_author);
+
+        printf("[*] Enter Book publisher: ");
+        scanf(" %[^\n]", book_publisher);
+
+        printf("[*] Enter Book id: ");
+        scanf("%d", &book_id);
+
+        printf("[*] Enter Book quantity: ");
+        scanf("%d", &book_quantity);
+
+        fprintf(fp, "%s\t%s\t%s\t%d\t%d\n", book_name, book_author, book_publisher, book_id, book_quantity);
+
+        printf("------------------------------\n");
+        printf("[\xE2\x9C\x93] Book added successfully\n");
+        printf("------------------------------\n");
+
+        char input;
+        printf("[?] Add one more book (y/n): ");
+        scanf(" %c", &input);
+        printf("\n\n");
+
+        if (input == 'n' || input == 'N')
+        {
+            bookManagement();
+        }
+        else
+        {
+            goto addbook;
+        }
+    }
+    else
+    {
+        printf("[x] %s", strerror(errno));
+        sleep(2);
+        bookManagement();
+    }
+
+    fclose(fp);
 }
 
 // Modify book
 void modifyBook()
 {
+
+    if (searchBook(2) == 1)
+    {
+    }
+    else
+    {
+        printf("\n-------------------------\n");
+        printf(">>> [x] Record Not Found <<< \n");
+        printf("-------------------------\n\n");
+    }
 }
 
 // List book
@@ -290,8 +359,46 @@ void rentBook()
 }
 
 // Search Book
-void searchBook()
+int searchBook(int searcher)
 {
+    char find[50], book_name[100], book_author[25], book_publisher[25];
+    int book_id, book_quantity, flag = 0;
+
+    printf("Enter book name or author name: ");
+    scanf(" %[^n]", find);
+
+    FILE *fp = fopen("Book_details.txt", "r");
+    if (fp != NULL)
+    {
+        while (fscanf(fp, "%s %s %s %d %d", book_name, book_author, book_publisher, book_id, book_quantity))
+        {
+            if (strcmp(find, book_name) || strcmp(find, book_author) != EOF)
+            {
+                if (searcher == 3)
+                {
+                    printf("\n-------------------------\n");
+                    printf(">>> [\xE2\x9C\x93] Record Found <<< \n");
+                    printf("-------------------------\n\n");
+
+                    printf("[*] Book name: ", book_name);
+                    printf("[*] Author name: ", book_author);
+                    printf("[*] Publiser name: ", book_publisher);
+                    printf("[*] Book id: ", book_id);
+                    printf("[*] Quantiry: ", book_quantity);
+                }
+                else
+                {
+                    flag = 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        printf(strerror(errno));
+    }
+
+    return flag;
 }
 
 // Delete book
