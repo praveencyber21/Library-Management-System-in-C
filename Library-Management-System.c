@@ -193,7 +193,7 @@ void bookManagement()
     switch (choice)
     {
     case 1:
-        addBook();
+        addBook(3);
         break;
     case 2:
         modifyBook();
@@ -274,7 +274,7 @@ void userManagement()
     }
 }
 // Add book
-void addBook()
+void addBook(int adder)
 {
     char book_name[100], book_author[25], book_publisher[25];
     int book_id, book_quantity;
@@ -304,8 +304,27 @@ addbook:
         printf("[*] Enter Book quantity: ");
         scanf("%d", &book_quantity);
 
-        fprintf(fp, "%s %s %s %d %d\n", book_name, book_author, book_publisher, book_id, book_quantity);
+        if (adder == 2)
+        {
 
+            FILE *fT = fopen("temporary.txt", "a+");
+
+            if (fT != NULL)
+            {
+                fprintf(fT, "%s %s %s %d %d \n", book_name, book_author, book_publisher, book_id, book_quantity);
+                fclose(fT);
+            }
+            else
+            {
+                printf("Temporary file: %s \n", strerror(errno));
+            }
+
+            return;
+        }
+        else
+        {
+            fprintf(fp, "%s %s %s %d %d \n", book_name, book_author, book_publisher, book_id, book_quantity);
+        }
         printf("------------------------------\n");
         printf("[\xE2\x9C\x93] Book added successfully\n");
         printf("------------------------------\n");
@@ -337,16 +356,78 @@ addbook:
 // Modify book
 void modifyBook()
 {
+    char find[50], book_name[100], book_author[25], book_publisher[25];
+    int book_id, book_quantity;
+
+    char name[100], author[25], publisher[25];
+    int id, quantity;
 
     if (searchBook(2) == 1)
     {
+        printf("\n-------------------------\n");
+        printf(">>> [\xE2\x9C\x93] Record Found <<< \n");
+        printf("-------------------------\n\n");
+
+        FILE *fB = fopen("Book_details.txt", "r");
+        FILE *fT = fopen("temporary.txt", "a+");
+
+        if ((fB != NULL) && (fT != NULL))
+        {
+            printf("Again enter book name: ");
+            scanf(" %[^\n]", find);
+
+            while (fscanf(fB, "%s %s %s %d %d", book_name, book_author, book_publisher, &book_id, &book_quantity) != EOF)
+            {
+                if ((strcmp(find, book_name) != 0))
+                {
+                    fprintf(fT, "%s %s %s %d %d \n", book_name, book_author, book_publisher, book_id, book_quantity);
+                }
+                else
+                {
+                    // printf("Before addBook calling\n");
+                    addBook(2);
+                    printf("\n------------------------------\n");
+                    printf("[\xE2\x9C\x93] Book modified successfully\n");
+                    printf("------------------------------\n");
+                    // printf("After addBook called\n");
+                }
+            }
+            fclose(fT);
+            fclose(fB);
+
+            FILE *fB = fopen("Book_details.txt", "w");
+            FILE *fT = fopen("temporary.txt", "r");
+
+            while (fscanf(fT, "%s %s %s %d %d", book_name, book_author, book_publisher, &book_id, &book_quantity) != EOF)
+            {
+                fprintf(fB, "%s %s %s %d %d \n", book_name, book_author, book_publisher, book_id, book_quantity);
+            }
+
+            fclose(fT);
+            fclose(fB);
+
+            FILE *fwT = fopen("temporary.txt", "w");
+            fclose(fwT);
+
+            system("rm temporary.txt"); // Delete  a temporary file
+        }
+        else
+        {
+            printf("%s\n", strerror(errno));
+        }
     }
     else
     {
-        printf("\n-------------------------\n");
+        printf("\n-----------------------------\n");
         printf(">>> [x] Record Not Found <<< \n");
-        printf("-------------------------\n\n");
+        printf("-----------------------------\n\n");
     }
+
+    printf("[<--] Press any key to main menu ");
+    getch();
+    getch();
+    sleep(2);
+    menu();
 }
 
 // List book
@@ -378,7 +459,6 @@ void listBook()
     }
     fclose(fp);
 
-    char input;
     printf("[<--] Press any key to main menu ");
     getch();
     getch();
@@ -395,18 +475,21 @@ void rentBook()
 int searchBook(int searcher)
 {
     char find[50], book_name[100], book_author[25], book_publisher[25];
-    int book_id, book_quantity, flag = 0;
+    int book_id, book_quantity, found = 0, flag = 0;
 
     printf("Enter book name or author name: ");
-    scanf(" %[^n]", find);
+    scanf(" %[^\n]", find);
 
     FILE *fp = fopen("Book_details.txt", "r");
     if (fp != NULL)
     {
+
         while (fscanf(fp, "%s %s %s %d %d", book_name, book_author, book_publisher, &book_id, &book_quantity) != EOF)
         {
-            if (strcmp(find, book_name) || strcmp(find, book_author))
+
+            if ((strcmp(find, book_name) == 0))
             {
+                found = 1;
                 if (searcher == 3)
                 {
                     printf("\n-------------------------\n");
@@ -417,19 +500,19 @@ int searchBook(int searcher)
                     printf("[*] Author name: %s\n", book_author);
                     printf("[*] Publiser name: %s\n", book_publisher);
                     printf("[*] Book id: %d\n", book_id);
-                    printf("[*] Quantiry: %d\n", book_quantity);
+                    printf("[*] Quantity: %d\n", book_quantity);
                 }
                 else
                 {
-                    flag = 1;
+                    return flag = 1;
                 }
             }
-            else
-            {
-                printf("\n-------------------------\n");
-                printf(">>> [x] Record Not Found <<< \n");
-                printf("-------------------------\n\n");
-            }
+        }
+        if (found == 0)
+        {
+            printf("\n-----------------------------\n");
+            printf(">>> [x] Record Not Found <<< \n");
+            printf("-----------------------------\n\n");
         }
     }
     else

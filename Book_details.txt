@@ -1,3 +1,4 @@
-priya priya priya 1 1
-kumar kumar kumar 2 1000000
-Praveen praveen praveen 10 100
+Praveen praveen praveen 1 1 
+Priya priya priya 2 2 
+Krishna Priya krish krish 3 3 
+Rich_dad_poor_dad dad dad 4 4 
