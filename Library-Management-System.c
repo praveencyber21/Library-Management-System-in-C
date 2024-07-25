@@ -147,7 +147,7 @@ void menu()
     printf("    Choice: ");
 
     int choice;
-    scanf("%d", &choice);
+    scanf(" %d", &choice);
     switch (choice)
     {
     case 1:
@@ -279,15 +279,16 @@ void addBook()
     char book_name[100], book_author[25], book_publisher[25];
     int book_id, book_quantity;
 
-    FILE *fp = fopen("Book_details.txt", "ab+");
+    system("clear");
+    printf("----------------------------\n");
+    printf(">>> Add Boook <<<\n");
+    printf("----------------------------\n\n");
+
+addbook:
+    FILE *fp = fopen("Book_details.txt", "a+");
     if (fp != NULL)
     {
-        system("clear");
-        printf("----------------------------\n");
-        printf(">>> Add Boook <<<\n");
-        printf("----------------------------\n\n");
 
-    addbook:
         printf("[*] Enter Book name: ");
         scanf(" %[^\n]", book_name);
 
@@ -303,11 +304,13 @@ void addBook()
         printf("[*] Enter Book quantity: ");
         scanf("%d", &book_quantity);
 
-        fprintf(fp, "%s\t%s\t%s\t%d\t%d\n", book_name, book_author, book_publisher, book_id, book_quantity);
+        fprintf(fp, "%s %s %s %d %d\n", book_name, book_author, book_publisher, book_id, book_quantity);
 
         printf("------------------------------\n");
         printf("[\xE2\x9C\x93] Book added successfully\n");
         printf("------------------------------\n");
+
+        fclose(fp);
 
         char input;
         printf("[?] Add one more book (y/n): ");
@@ -329,8 +332,6 @@ void addBook()
         sleep(2);
         bookManagement();
     }
-
-    fclose(fp);
 }
 
 // Modify book
@@ -351,6 +352,38 @@ void modifyBook()
 // List book
 void listBook()
 {
+
+    char find[50], book_name[100], book_author[25], book_publisher[25];
+    int book_id, book_quantity;
+
+    FILE *fp = fopen("Book_details.txt", "r");
+    if (fp != NULL)
+    {
+        int count = 1;
+        printf("\n-------------------------\n");
+        printf(">>> [*] Book List <<< \n");
+        printf("-------------------------\n\n");
+
+        while (fscanf(fp, "%s %s %s %d %d", book_name, book_author, book_publisher, &book_id, &book_quantity) != EOF)
+        {
+            printf("------------------------------\n");
+            printf("Book: %d\n", count++);
+            printf("------------------------------\n");
+            printf("[*] Book name: %s\n", book_name);
+            printf("[*] Author name: %s\n", book_author);
+            printf("[*] Publiser name: %s\n", book_publisher);
+            printf("[*] Book id: %d\n", book_id);
+            printf("[*] Quantity: %d\n\n", book_quantity);
+        }
+    }
+    fclose(fp);
+
+    char input;
+    printf("[<--] Press any key to main menu ");
+    getch();
+    getch();
+    sleep(2);
+    menu();
 }
 
 // Rent book
@@ -370,9 +403,9 @@ int searchBook(int searcher)
     FILE *fp = fopen("Book_details.txt", "r");
     if (fp != NULL)
     {
-        while (fscanf(fp, "%s %s %s %d %d", book_name, book_author, book_publisher, book_id, book_quantity))
+        while (fscanf(fp, "%s %s %s %d %d", book_name, book_author, book_publisher, &book_id, &book_quantity) != EOF)
         {
-            if (strcmp(find, book_name) || strcmp(find, book_author) != EOF)
+            if (strcmp(find, book_name) || strcmp(find, book_author))
             {
                 if (searcher == 3)
                 {
@@ -380,22 +413,28 @@ int searchBook(int searcher)
                     printf(">>> [\xE2\x9C\x93] Record Found <<< \n");
                     printf("-------------------------\n\n");
 
-                    printf("[*] Book name: ", book_name);
-                    printf("[*] Author name: ", book_author);
-                    printf("[*] Publiser name: ", book_publisher);
-                    printf("[*] Book id: ", book_id);
-                    printf("[*] Quantiry: ", book_quantity);
+                    printf("[*] Book name: %s\n", book_name);
+                    printf("[*] Author name: %s\n", book_author);
+                    printf("[*] Publiser name: %s\n", book_publisher);
+                    printf("[*] Book id: %d\n", book_id);
+                    printf("[*] Quantiry: %d\n", book_quantity);
                 }
                 else
                 {
                     flag = 1;
                 }
             }
+            else
+            {
+                printf("\n-------------------------\n");
+                printf(">>> [x] Record Not Found <<< \n");
+                printf("-------------------------\n\n");
+            }
         }
     }
     else
     {
-        printf(strerror(errno));
+        printf("%s\n", strerror(errno));
     }
 
     return flag;
